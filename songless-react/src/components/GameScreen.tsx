@@ -31,8 +31,7 @@ const Body = styled.div`
 `;
 
 const Spacer = styled.div`
-  flex: 1;
-  min-height: 8px;
+  height: 12px;
 `;
 
 const Controls = styled.div`

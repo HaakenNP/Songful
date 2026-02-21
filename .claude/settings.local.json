@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(copy:*)",
+      "Bash(git init:*)",
+      "Bash(git -C \"C:\\\\Users\\\\haake\\\\OneDrive\\\\Desktop\\\\Claude\\\\Songless\" status)",
+      "Bash(npm create:*)",
+      "Bash(npx:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(del:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(gh auth status:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(where:*)",
+      "Bash(GIT_TERMINAL_PROMPT=1 git push:*)",
+      "Bash(winget install:*)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" auth status)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" pr create --title \"feat: Songless music guessing game\" --body \"$\\(cat <<''EOF''\n## Summary\n- Built a Heardle-inspired music guessing game from a single HTML prototype into a structured React + Vite + TypeScript app\n- Uses styled-components, React Context + useReducer, and Deezer API for 30-second song previews with a 3-proxy CORS fallback chain\n- Includes daily mode \\(seeded RNG + localStorage persistence\\), unlimited mode with shuffle, autocomplete search with keyboard nav, and progressive audio reveal \\(0.1s → 4s\\)\n\n## Test plan\n- [ ] Run `npm run dev` and verify app loads in browser\n- [ ] Test Daily mode: play through all 3 genres, refresh page, confirm state persisted\n- [ ] Test Unlimited mode: play, shuffle, verify new songs load\n- [ ] Test audio: play/pause, progress bar animates, auto-stops at step duration\n- [ ] Test suggestions: type to search, arrow keys navigate, Enter selects, Escape closes\n- [ ] Test mobile: resize to 480px and 360px, check layout\n- [ ] Run `npx tsc --noEmit` — zero TypeScript errors\n- [ ] Run `npx vite build` — clean production build\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\nEOF\n\\)\")",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" api repos/HaakenNP/Songful --jq '.default_branch')",
+      "Bash(git branch:*)",
+      "Bash(git fetch:*)",
+      "Bash(git checkout:*)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" pr create --base main --head feat/songless-react-typescript --title \"feat: Songless music guessing game\" --body \"$\\(cat <<''EOF''\n## Summary\n- Built a Heardle-inspired music guessing game from a single HTML prototype into a structured React + Vite + TypeScript app\n- Uses styled-components, React Context + useReducer, and Deezer API for 30-second song previews with a 3-proxy CORS fallback chain\n- Includes daily mode \\(seeded RNG + localStorage persistence\\), unlimited mode with shuffle, autocomplete search with keyboard nav, and progressive audio reveal \\(0.1s → 4s\\)\n\n## Test plan\n- [ ] Run `npm run dev` and verify app loads in browser\n- [ ] Test Daily mode: play through all 3 genres, refresh page, confirm state persisted\n- [ ] Test Unlimited mode: play, shuffle, verify new songs load\n- [ ] Test audio: play/pause, progress bar animates, auto-stops at step duration\n- [ ] Test suggestions: type to search, arrow keys navigate, Enter selects, Escape closes\n- [ ] Test mobile: resize to 480px and 360px, check layout\n- [ ] Run `npx tsc --noEmit` — zero TypeScript errors\n- [ ] Run `npx vite build` — clean production build\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\nEOF\n\\)\")",
+      "Bash(git rebase:*)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" pr list --repo HaakenNP/Songful)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" pr list --repo HaakenNP/Songful --state all)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" pr create --repo HaakenNP/Songful --base main --head feat/songless-react-typescript --title \"feat: rename to Songful + add 9 new genres\" --body \"$\\(cat <<''EOF''\n## Summary\n- Renamed game from \"Songless\" to \"Songful\" across all UI surfaces and page title\n- Expanded from 3 genres to 12: All, Pop, Rock, Hip Hop, R&B, Country, EDM, Latin, Indie, Jazz, K-Pop, and Alt\n- Each genre has ~50 curated songs with well-known tracks\n- Genre tabs now scroll horizontally to fit all 12 genres on any screen size\n\n## Test plan\n- [ ] Verify title reads \"Songful\" on home screen, game header, and browser tab\n- [ ] Confirm all 12 genre tabs render and scroll horizontally on mobile\n- [ ] Test each genre loads songs and fetches audio previews via Deezer\n- [ ] Test daily mode progresses through all 12 genres\n- [ ] `npx tsc --noEmit` — zero errors\n- [ ] `npx vite build` — clean build \\(275KB bundle\\)\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\nEOF\n\\)\")"
+    ]
+  }
+}
