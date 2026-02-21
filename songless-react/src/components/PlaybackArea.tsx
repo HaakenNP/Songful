@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import ProgressBar from './ProgressBar';
-import { DURATIONS, MAX_STEPS } from '../constants';
+import { CUM_DURATIONS, MAX_STEPS } from '../constants';
 
 const Wrapper = styled.div``;
 
@@ -21,7 +21,7 @@ const DurLabel = styled.div`
 const PlayWrap = styled.div`
   display: flex;
   justify-content: center;
-  padding: 10px 0 14px;
+  padding: 8px 0 10px;
 `;
 
 const PlayBtn = styled.button`
@@ -88,13 +88,13 @@ export default function PlaybackArea({ step, isPlaying, fillWidth, animating, pr
     );
   }
 
-  const d = DURATIONS[Math.min(step, MAX_STEPS - 1)];
+  const d = CUM_DURATIONS[Math.min(step, MAX_STEPS - 1)];
   const label = d < 1 ? `${d} seconds` : `${d} second${d !== 1 ? 's' : ''}`;
 
   return (
     <Wrapper>
       <DurLabel>{label} <span>&#9660;</span></DurLabel>
-      <ProgressBar fillWidth={fillWidth} animating={animating} />
+      <ProgressBar fillWidth={fillWidth} animating={animating} step={step} />
       <PlayWrap>
         <PlayBtn onClick={onPlay}>
           {isPlaying ? '\u23F8' : '\u25B6'}

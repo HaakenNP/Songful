@@ -7,12 +7,12 @@ type RowVariant = '' | 'current' | 'skip' | 'correct' | 'wrong';
 const Rows = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: 5px;
+  margin-bottom: 8px;
 `;
 
 const Row = styled.div<{ $variant: RowVariant }>`
-  height: 42px;
+  height: 36px;
   border-radius: 7px;
   border: 1px solid ${p => p.theme.bd};
   background: ${p => p.theme.sf};
@@ -42,7 +42,7 @@ const Row = styled.div<{ $variant: RowVariant }>`
   `}
 
   @media (max-width: 480px) {
-    height: 38px;
+    height: 34px;
     font-size: 13px;
     padding: 0 10px;
   }

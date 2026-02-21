@@ -24,7 +24,7 @@ const Body = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 10px 16px 0;
+  padding: 8px 16px 0;
   max-width: 540px;
   width: 100%;
   margin: 0 auto;
@@ -32,7 +32,7 @@ const Body = styled.div`
 
 const Spacer = styled.div`
   flex: 1;
-  min-height: 20px;
+  min-height: 8px;
 `;
 
 const Controls = styled.div`
