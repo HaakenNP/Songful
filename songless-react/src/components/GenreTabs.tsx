@@ -6,6 +6,10 @@ const TabsWrap = styled.div`
   display: flex;
   justify-content: center;
   padding: 12px 16px 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar { display: none; }
 `;
 
 const Tabs = styled.div`
@@ -13,13 +17,15 @@ const Tabs = styled.div`
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid ${p => p.theme.bd};
+  flex-shrink: 0;
 `;
 
 const Tab = styled.button<{ $active: boolean; $done: boolean; $locked: boolean }>`
-  padding: 7px 20px;
+  padding: 7px 14px;
   border: none;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
   transition: background 0.15s, color 0.15s;
   background: ${p => p.$active ? p.theme.sfL : 'transparent'};
   color: ${p => p.$done ? p.theme.acD : p.$active ? p.theme.wh : p.theme.txM};

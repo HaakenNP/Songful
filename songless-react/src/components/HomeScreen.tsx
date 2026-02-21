@@ -135,10 +135,10 @@ export default function HomeScreen() {
 
   return (
     <Screen>
-      <Title>Songless</Title>
+      <Title>Songful</Title>
       <Sub>Guess the song from a tiny snippet</Sub>
       <Btns>
-        <Btn $primary onClick={handleDaily}>Daily Songless</Btn>
+        <Btn $primary onClick={handleDaily}>Daily Songful</Btn>
         <Btn onClick={handleUnlimited}>Unlimited Play</Btn>
       </Btns>
 
