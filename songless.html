@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Songless</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #111116; --sf: #1a1a24; --sfL: #222230; --bd: #2a2a38;
+    --tx: #e0e0ea; --txM: #5e5e72; --ac: #4ade80; --acD: #22c55e;
+    --wr: #ef4444; --wh: #ffffff;
+  }
+  body { background: var(--bg); color: var(--tx); font-family: 'DM Sans', 'Helvetica Neue', system-ui, sans-serif; min-height: 100vh; overflow-x: hidden; }
+  button { font-family: inherit; cursor: pointer; }
+  input { font-family: inherit; }
+
+  /* Screens */
+  .screen { display: none; min-height: 100vh; flex-direction: column; }
+  .screen.active { display: flex; }
+
+  /* Home */
+  .home { align-items: center; justify-content: center; padding: 24px; text-align: center; }
+  .home h1 { font-family: 'Space Mono', monospace; font-size: 48px; font-weight: 700; color: var(--wh); margin-bottom: 8px; letter-spacing: -1px; }
+  .home .sub { color: var(--txM); font-size: 15px; margin-bottom: 44px; }
+  .home .btns { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 320px; }
+  .home .btns button { padding: 15px 24px; border-radius: 10px; font-size: 16px; font-weight: 700; border: none; transition: transform 0.1s; }
+  .home .btns button:active { transform: scale(0.97); }
+  .btn-primary { background: var(--ac); color: #000; }
+  .btn-secondary { background: var(--sf); color: var(--tx); border: 1px solid var(--bd) !important; }
+  .stats-row { margin-top: 36px; display: flex; gap: 28px; text-align: center; }
+  .stats-row .val { font-size: 24px; font-weight: 800; color: var(--wh); }
+  .stats-row .lbl { font-size: 11px; color: var(--txM); text-transform: uppercase; letter-spacing: 1px; }
+  .home .note { color: var(--txM); font-size: 11px; margin-top: 36px; opacity: 0.4; max-width: 280px; }
+
+  /* Game */
+  .game { }
+  .game-header { padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--bd); }
+  .game-header h1 { font-family: 'Space Mono', monospace; font-size: 24px; font-weight: 700; color: var(--wh); }
+  .game-header button { background: none; border: none; color: var(--txM); font-size: 20px; padding: 4px; line-height: 1; }
+  .shuffle-btn { background: none !important; border: 1px solid var(--bd) !important; border-radius: 8px !important; color: var(--tx) !important; font-size: 13px !important; font-weight: 600 !important; padding: 5px 12px !important; transition: background 0.15s; }
+  .shuffle-btn:hover { background: var(--sfL) !important; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--bd); display: flex; align-items: center; justify-content: center; color: var(--txM); font-size: 14px; }
+
+  .tabs-wrap { display: flex; justify-content: center; padding: 12px 16px 4px; }
+  .tabs { display: flex; border-radius: 8px; overflow: hidden; border: 1px solid var(--bd); }
+  .tabs button { padding: 7px 20px; border: none; font-size: 14px; font-weight: 600; transition: background 0.15s, color 0.15s; background: transparent; color: var(--txM); }
+  .tabs button.active { background: var(--sfL); color: var(--wh); }
+  .tabs button.done { color: var(--acD); }
+  .tabs button.locked { opacity: 0.4; cursor: default; }
+
+  .game-body { flex: 1; display: flex; flex-direction: column; padding: 10px 16px 0; max-width: 540px; width: 100%; margin: 0 auto; }
+
+  /* Guess rows */
+  .rows { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .row { height: 42px; border-radius: 7px; border: 1px solid var(--bd); background: var(--sf); display: flex; align-items: center; padding: 0 14px; transition: all 0.2s; font-size: 14px; font-weight: 500; }
+  .row.current { border-color: rgba(255,255,255,0.18); }
+  .row.skip { background: rgba(255,255,255,0.015); color: #4a4a5a; }
+  .row.correct { background: rgba(74,222,128,0.1); border-color: var(--acD); color: var(--ac); }
+  .row.wrong { background: rgba(239,68,68,0.07); border-color: rgba(239,68,68,0.25); color: var(--wr); }
+  .row .icon { font-weight: 700; margin-right: 8px; font-size: 13px; }
+
+  /* Result panel */
+  .result { text-align: center; padding: 12px 0; border-top: 1px solid var(--bd); margin-bottom: 8px; }
+  .result .label { font-size: 13px; color: var(--txM); margin-bottom: 2px; }
+  .result .song-title { font-size: 18px; font-weight: 800; color: var(--wh); }
+  .result .song-artist { font-size: 14px; color: var(--txM); margin-bottom: 12px; }
+  .result .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .result .actions button { padding: 9px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; border: none; }
+  .result .done-msg { font-size: 13px; color: var(--acD); font-weight: 600; padding: 8px 0; }
+
+  /* Duration + progress */
+  .dur-label { font-size: 13px; font-weight: 700; color: var(--wh); margin-bottom: 5px; font-family: 'Space Mono', monospace; }
+  .dur-label span { margin-left: 6px; color: var(--txM); font-size: 10px; }
+
+  .progress-bar { height: 18px; border-radius: 9px; background: #222230; overflow: hidden; margin-bottom: 12px; position: relative; }
+  .progress-bar .marker { position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(0,0,0,0.5); z-index: 2; }
+  .progress-bar .fill { height: 100%; border-radius: 9px; background: linear-gradient(90deg, var(--ac), var(--acD)); transition: width 0.3s ease; min-width: 0; }
+  .progress-bar .fill.animating { transition: none; }
+
+  /* Play button */
+  .play-wrap { display: flex; justify-content: center; padding: 10px 0 14px; }
+  .play-btn { width: 52px; height: 52px; border-radius: 50%; border: none; background: var(--ac); color: #000; font-size: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(74,222,128,0.3); transition: transform 0.1s; }
+  .play-btn:active { transform: scale(0.92); }
+
+  /* Search + Skip */
+  .controls { display: flex; gap: 8px; align-items: stretch; position: relative; padding-bottom: 16px; }
+  .search-wrap { flex: 1; position: relative; }
+  .suggestions { position: absolute; bottom: 100%; left: 0; right: 0; background: var(--sf); border-radius: 10px 10px 0 0; border: 1px solid var(--bd); border-bottom: none; max-height: 320px; overflow-y: auto; z-index: 20; box-shadow: 0 -8px 32px rgba(0,0,0,0.6); display: none; }
+  .suggestions.open { display: block; }
+  .suggestions button { width: 100%; padding: 11px 14px; background: none; border: none; border-bottom: 1px solid var(--bd); color: var(--tx); font-size: 14px; text-align: left; display: flex; align-items: center; gap: 6px; transition: background 0.1s; }
+  .suggestions button:last-child { border-bottom: none; }
+  .suggestions button:hover { background: var(--sfL); }
+  .suggestions .artist { font-weight: 700; }
+  .suggestions .dash { color: var(--txM); }
+
+  .input-bar { display: flex; align-items: center; gap: 10px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--bd); background: var(--sf); height: 44px; }
+  .input-bar.has-sug { border-radius: 0 0 10px 10px; }
+  .input-bar .search-icon { color: var(--txM); font-size: 14px; }
+  .input-bar input { flex: 1; background: none; border: none; color: var(--wh); font-size: 14px; outline: none; }
+  .input-bar input::placeholder { color: var(--txM); }
+
+  .skip-btn { padding: 0 18px; border-radius: 10px; border: 1px solid var(--bd); background: var(--sf); color: var(--tx); font-size: 14px; font-weight: 700; white-space: nowrap; transition: background 0.15s; }
+  .skip-btn:hover { background: var(--sfL); }
+
+  .loading-msg { text-align: center; color: var(--txM); font-size: 14px; padding: 20px; }
+  .loading-msg .spinner { width: 24px; height: 24px; border: 3px solid var(--bd); border-top-color: var(--ac); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 10px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .spacer { flex: 1; min-height: 20px; }
+
+  /* Error state */
+  .error-msg { text-align: center; color: var(--wr); font-size: 14px; padding: 16px; }
+  .error-msg button { margin-top: 8px; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--bd); background: var(--sf); color: var(--tx); font-size: 13px; font-weight: 600; }
+
+  /* Suggestion highlight */
+  .suggestions button.highlighted { background: var(--sfL); }
+
+  /* Daily completed banner */
+  .daily-done-banner { background: var(--sf); border: 1px solid var(--bd); border-radius: 10px; padding: 16px; margin-top: 16px; text-align: center; max-width: 320px; width: 100%; }
+  .daily-done-banner .check { font-size: 24px; margin-bottom: 4px; }
+  .daily-done-banner .msg { color: var(--acD); font-size: 14px; font-weight: 600; }
+  .daily-done-banner .sub-msg { color: var(--txM); font-size: 12px; margin-top: 4px; }
+
+  /* Mobile improvements */
+  @media (max-width: 480px) {
+    .home h1 { font-size: 36px; }
+    .game-header h1 { font-size: 20px; }
+    .tabs button { padding: 7px 14px; font-size: 13px; }
+    .row { height: 38px; font-size: 13px; padding: 0 10px; }
+    .play-btn { width: 48px; height: 48px; font-size: 18px; }
+    .controls { gap: 6px; }
+    .skip-btn { padding: 0 14px; font-size: 13px; }
+    .input-bar { height: 40px; }
+    .input-bar input { font-size: 13px; }
+    .suggestions button { padding: 10px 12px; font-size: 13px; }
+  }
+
+  @media (max-width: 360px) {
+    .home h1 { font-size: 30px; }
+    .stats-row { gap: 18px; }
+    .stats-row .val { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── HOME SCREEN ─── -->
+<div id="home-screen" class="screen home active">
+  <h1>Songless</h1>
+  <p class="sub">Guess the song from a tiny snippet</p>
+  <div class="btns">
+    <button class="btn-primary" onclick="startSession('daily')">Daily Songless</button>
+    <button class="btn-secondary" onclick="startSession('unlimited')">Unlimited Play</button>
+  </div>
+  <div class="stats-row" id="stats-row" style="display:none">
+    <div><div class="val" id="stat-played">0</div><div class="lbl">Played</div></div>
+    <div><div class="val" id="stat-won">0</div><div class="lbl">Won</div></div>
+    <div><div class="val" id="stat-streak">0</div><div class="lbl">Streak</div></div>
+  </div>
+  <div id="daily-done-banner" class="daily-done-banner" style="display:none">
+    <div class="check">&#10003;</div>
+    <div class="msg">Daily complete!</div>
+    <div class="sub-msg">Come back tomorrow for a new challenge</div>
+  </div>
+  <p class="note">🎵 Uses real 30-second song previews via Deezer</p>
+</div>
+
+<!-- ─── GAME SCREEN ─── -->
+<div id="game-screen" class="screen game">
+  <div class="game-header">
+    <button onclick="goHome()" style="font-size:20px">☰</button>
+    <h1>Songless</h1>
+    <div id="header-right"></div>
+  </div>
+
+  <div class="tabs-wrap">
+    <div class="tabs" id="genre-tabs"></div>
+  </div>
+
+  <div class="game-body" id="game-body">
+    <div class="rows" id="guess-rows"></div>
+    <div id="result-panel"></div>
+    <div class="spacer"></div>
+
+    <div id="loading-area" class="loading-msg" style="display:none">
+      <div class="spinner"></div>
+      Loading song preview...
+    </div>
+
+    <div id="playback-area">
+      <div class="dur-label" id="dur-label">0.1 seconds <span>▼</span></div>
+      <div class="progress-bar" id="progress-bar">
+        <div class="fill" id="progress-fill"></div>
+      </div>
+      <div class="play-wrap">
+        <button class="play-btn" id="play-btn" onclick="togglePlay()">▶</button>
+      </div>
+    </div>
+
+    <div class="controls" id="controls-area">
+      <div class="search-wrap">
+        <div class="suggestions" id="suggestions"></div>
+        <div class="input-bar" id="input-bar">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="guess-input" placeholder="Search for a song..." autocomplete="off">
+        </div>
+      </div>
+      <button class="skip-btn" id="skip-btn" onclick="doSkip()">Skip</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// SONG DATABASE — Top well-known songs per genre
+// Each has a Deezer search query to find the preview
+// ═══════════════════════════════════════════════
+const SONG_DB = {
+  all: [
+    { title: "Blinding Lights", artist: "The Weeknd" },
+    { title: "Shape of You", artist: "Ed Sheeran" },
+    { title: "Levitating", artist: "Dua Lipa" },
+    { title: "As It Was", artist: "Harry Styles" },
+    { title: "Anti-Hero", artist: "Taylor Swift" },
+    { title: "Flowers", artist: "Miley Cyrus" },
+    { title: "Bad Guy", artist: "Billie Eilish" },
+    { title: "Watermelon Sugar", artist: "Harry Styles" },
+    { title: "Don't Start Now", artist: "Dua Lipa" },
+    { title: "Save Your Tears", artist: "The Weeknd" },
+    { title: "Good 4 U", artist: "Olivia Rodrigo" },
+    { title: "drivers license", artist: "Olivia Rodrigo" },
+    { title: "Heat Waves", artist: "Glass Animals" },
+    { title: "Dynamite", artist: "BTS" },
+    { title: "Cruel Summer", artist: "Taylor Swift" },
+    { title: "Uptown Funk", artist: "Bruno Mars" },
+    { title: "Starboy", artist: "The Weeknd" },
+    { title: "Havana", artist: "Camila Cabello" },
+    { title: "Someone You Loved", artist: "Lewis Capaldi" },
+    { title: "Dance Monkey", artist: "Tones and I" },
+    { title: "Circles", artist: "Post Malone" },
+    { title: "Old Town Road", artist: "Lil Nas X" },
+    { title: "Closer", artist: "The Chainsmokers" },
+    { title: "Shallow", artist: "Lady Gaga" },
+    { title: "thank u next", artist: "Ariana Grande" },
+    { title: "Bohemian Rhapsody", artist: "Queen" },
+    { title: "Sweet Child O Mine", artist: "Guns N Roses" },
+    { title: "Smells Like Teen Spirit", artist: "Nirvana" },
+    { title: "Mr. Brightside", artist: "The Killers" },
+    { title: "HUMBLE", artist: "Kendrick Lamar" },
+    { title: "Gods Plan", artist: "Drake" },
+    { title: "Sicko Mode", artist: "Travis Scott" },
+    { title: "Hotline Bling", artist: "Drake" },
+    { title: "Stronger", artist: "Kanye West" },
+    { title: "Lose Yourself", artist: "Eminem" },
+    { title: "Happy", artist: "Pharrell Williams" },
+    { title: "Rolling in the Deep", artist: "Adele" },
+    { title: "Thinking Out Loud", artist: "Ed Sheeran" },
+    { title: "Stay With Me", artist: "Sam Smith" },
+    { title: "Attention", artist: "Charlie Puth" },
+    { title: "New Rules", artist: "Dua Lipa" },
+    { title: "Espresso", artist: "Sabrina Carpenter" },
+    { title: "Seven Nation Army", artist: "The White Stripes" },
+    { title: "Viva la Vida", artist: "Coldplay" },
+    { title: "In the End", artist: "Linkin Park" },
+    { title: "Radioactive", artist: "Imagine Dragons" },
+    { title: "Gold Digger", artist: "Kanye West" },
+    { title: "Lucid Dreams", artist: "Juice WRLD" },
+    { title: "Sunflower", artist: "Post Malone" },
+    { title: "Not Like Us", artist: "Kendrick Lamar" },
+  ],
+  rock: [
+    { title: "Bohemian Rhapsody", artist: "Queen" },
+    { title: "Stairway to Heaven", artist: "Led Zeppelin" },
+    { title: "Hotel California", artist: "Eagles" },
+    { title: "Sweet Child O Mine", artist: "Guns N Roses" },
+    { title: "Smells Like Teen Spirit", artist: "Nirvana" },
+    { title: "Back in Black", artist: "AC DC" },
+    { title: "Wonderwall", artist: "Oasis" },
+    { title: "Livin on a Prayer", artist: "Bon Jovi" },
+    { title: "November Rain", artist: "Guns N Roses" },
+    { title: "Enter Sandman", artist: "Metallica" },
+    { title: "Don't Stop Believin", artist: "Journey" },
+    { title: "Comfortably Numb", artist: "Pink Floyd" },
+    { title: "Under the Bridge", artist: "Red Hot Chili Peppers" },
+    { title: "Creep", artist: "Radiohead" },
+    { title: "Wish You Were Here", artist: "Pink Floyd" },
+    { title: "Black Hole Sun", artist: "Soundgarden" },
+    { title: "Paranoid", artist: "Black Sabbath" },
+    { title: "Dream On", artist: "Aerosmith" },
+    { title: "Thunderstruck", artist: "AC DC" },
+    { title: "Kashmir", artist: "Led Zeppelin" },
+    { title: "Paint It Black", artist: "Rolling Stones" },
+    { title: "Highway to Hell", artist: "AC DC" },
+    { title: "Born to Run", artist: "Bruce Springsteen" },
+    { title: "Free Bird", artist: "Lynyrd Skynyrd" },
+    { title: "Alive", artist: "Pearl Jam" },
+    { title: "Everlong", artist: "Foo Fighters" },
+    { title: "Seven Nation Army", artist: "The White Stripes" },
+    { title: "Come As You Are", artist: "Nirvana" },
+    { title: "Californication", artist: "Red Hot Chili Peppers" },
+    { title: "Mr. Brightside", artist: "The Killers" },
+    { title: "In the End", artist: "Linkin Park" },
+    { title: "Numb", artist: "Linkin Park" },
+    { title: "Basket Case", artist: "Green Day" },
+    { title: "Boulevard of Broken Dreams", artist: "Green Day" },
+    { title: "Chop Suey", artist: "System of a Down" },
+    { title: "Radioactive", artist: "Imagine Dragons" },
+    { title: "Yellow", artist: "Coldplay" },
+    { title: "Clocks", artist: "Coldplay" },
+    { title: "The Scientist", artist: "Coldplay" },
+    { title: "Viva la Vida", artist: "Coldplay" },
+    { title: "Iris", artist: "Goo Goo Dolls" },
+    { title: "Zombie", artist: "The Cranberries" },
+    { title: "Losing My Religion", artist: "R.E.M." },
+    { title: "Somebody That I Used to Know", artist: "Gotye" },
+    { title: "Welcome to the Black Parade", artist: "My Chemical Romance" },
+    { title: "Take Me Out", artist: "Franz Ferdinand" },
+    { title: "Roxanne", artist: "The Police" },
+    { title: "Killing in the Name", artist: "Rage Against the Machine" },
+    { title: "Whole Lotta Love", artist: "Led Zeppelin" },
+    { title: "Smoke on the Water", artist: "Deep Purple" },
+  ],
+  hiphop: [
+    { title: "HUMBLE", artist: "Kendrick Lamar" },
+    { title: "Gods Plan", artist: "Drake" },
+    { title: "Sicko Mode", artist: "Travis Scott" },
+    { title: "Rockstar", artist: "Post Malone" },
+    { title: "Industry Baby", artist: "Lil Nas X" },
+    { title: "Mask Off", artist: "Future" },
+    { title: "XO Tour Llif3", artist: "Lil Uzi Vert" },
+    { title: "No Role Modelz", artist: "J. Cole" },
+    { title: "Bodak Yellow", artist: "Cardi B" },
+    { title: "Money Trees", artist: "Kendrick Lamar" },
+    { title: "Hotline Bling", artist: "Drake" },
+    { title: "In My Feelings", artist: "Drake" },
+    { title: "Bad and Boujee", artist: "Migos" },
+    { title: "Panda", artist: "Desiigner" },
+    { title: "Goosebumps", artist: "Travis Scott" },
+    { title: "POWER", artist: "Kanye West" },
+    { title: "Stronger", artist: "Kanye West" },
+    { title: "Gold Digger", artist: "Kanye West" },
+    { title: "Juicy", artist: "Notorious B.I.G." },
+    { title: "Gin and Juice", artist: "Snoop Dogg" },
+    { title: "Alright", artist: "Kendrick Lamar" },
+    { title: "Heartless", artist: "Kanye West" },
+    { title: "Runaway", artist: "Kanye West" },
+    { title: "All of the Lights", artist: "Kanye West" },
+    { title: "Swimming Pools", artist: "Kendrick Lamar" },
+    { title: "Started From the Bottom", artist: "Drake" },
+    { title: "Nice For What", artist: "Drake" },
+    { title: "Life Is Good", artist: "Future" },
+    { title: "Highest in the Room", artist: "Travis Scott" },
+    { title: "Congratulations", artist: "Post Malone" },
+    { title: "I Like It", artist: "Cardi B" },
+    { title: "Lucid Dreams", artist: "Juice WRLD" },
+    { title: "Not Like Us", artist: "Kendrick Lamar" },
+    { title: "Lose Yourself", artist: "Eminem" },
+    { title: "Without Me", artist: "Eminem" },
+    { title: "Stan", artist: "Eminem" },
+    { title: "In Da Club", artist: "50 Cent" },
+    { title: "Ms. Jackson", artist: "OutKast" },
+    { title: "Hey Ya", artist: "OutKast" },
+    { title: "Nuthin but a G Thang", artist: "Dr. Dre" },
+    { title: "California Love", artist: "2Pac" },
+    { title: "Changes", artist: "2Pac" },
+    { title: "Empire State of Mind", artist: "Jay-Z" },
+    { title: "Nonstop", artist: "Drake" },
+    { title: "Like That", artist: "Future" },
+    { title: "FE!N", artist: "Travis Scott" },
+    { title: "RAPSTAR", artist: "Polo G" },
+    { title: "Essence", artist: "Wizkid" },
+    { title: "Super Gremlin", artist: "Kodak Black" },
+    { title: "First Class", artist: "Jack Harlow" },
+  ],
+};
+
+const ALL_SONGS_FLAT = [...SONG_DB.all, ...SONG_DB.rock, ...SONG_DB.hiphop];
+const GENRE_ORDER = ["all", "rock", "hiphop"];
+const GENRE_LABELS = { all: "All", rock: "Rock", hiphop: "Hip Hop" };
+const DURATIONS = [0.1, 0.25, 0.5, 1, 2, 4]; // seconds per step
+const MAX_DURATION = 16; // conceptual max for progress bar
+const STEP_FILL = [0.1/MAX_DURATION, 0.25/MAX_DURATION, 0.5/MAX_DURATION, 1/MAX_DURATION, 2/MAX_DURATION, 4/MAX_DURATION];
+// cumulative fill percentages for progress bar
+const CUM_FILL = DURATIONS.map((_, i) => DURATIONS.slice(0, i + 1).reduce((a, b) => a + b, 0) / MAX_DURATION);
+const MAX_STEPS = 6;
+const LS_STATS_KEY = 'songless_stats';
+const LS_DAILY_KEY = 'songless_daily';
+
+// ═══════════════════════════════
+// STATE
+// ═══════════════════════════════
+let mode = null; // 'daily' | 'unlimited'
+let activeGenre = "all";
+let songs = {}; // { all: { title, artist }, rock: ..., hiphop: ... }
+let previewCache = {}; // genre -> previewUrl
+let step = 0;
+let hist = []; // [{ type: 'skip'|'correct'|'wrong', text?, step }]
+let gameState = "playing"; // playing | won | lost
+let results = {}; // { all: 'won'|'lost', ... }
+let stats = loadStats();
+let audio = new Audio();
+let isPlaying = false;
+let playTimer = null;
+let stopTimeout = null;
+let currentPreviewUrl = null;
+let sugHighlight = -1; // keyboard nav index for suggestions
+
+// ═══════════════════════════════
+// LOCALSTORAGE PERSISTENCE
+// ═══════════════════════════════
+function loadStats() {
+  try {
+    const raw = localStorage.getItem(LS_STATS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { p: 0, w: 0, s: 0 };
+}
+
+function saveStats() {
+  try { localStorage.setItem(LS_STATS_KEY, JSON.stringify(stats)); } catch (e) {}
+}
+
+function getDailyKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
+function loadDailyState() {
+  try {
+    const raw = localStorage.getItem(LS_DAILY_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (data.day === getDailyKey()) return data;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function saveDailyState() {
+  if (mode !== 'daily') return;
+  try {
+    localStorage.setItem(LS_DAILY_KEY, JSON.stringify({
+      day: getDailyKey(),
+      results: results,
+    }));
+  } catch (e) {}
+}
+
+function isDailyComplete() {
+  const state = loadDailyState();
+  if (!state) return false;
+  return GENRE_ORDER.every(g => state.results[g]);
+}
+
+// ═══════════════════════════════
+// DEEZER API WITH CORS FALLBACK
+// ═══════════════════════════════
+const CORS_PROXIES = [
+  url => url, // Direct (works when hosted on a proper server)
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+];
+let workingProxyIdx = 0;
+
+async function fetchWithCorsRetry(url) {
+  const order = [workingProxyIdx, ...Array.from({length: CORS_PROXIES.length}, (_, i) => i).filter(i => i !== workingProxyIdx)];
+  for (const idx of order) {
+    try {
+      const proxiedUrl = CORS_PROXIES[idx](url);
+      const resp = await fetch(proxiedUrl);
+      if (resp.ok) {
+        workingProxyIdx = idx;
+        return await resp.json();
+      }
+    } catch (e) { /* try next proxy */ }
+  }
+  return null;
+}
+
+async function fetchPreview(title, artist) {
+  try {
+    const q = encodeURIComponent(`${title} ${artist}`.trim());
+    const data = await fetchWithCorsRetry(`https://api.deezer.com/search?q=${q}&limit=5`);
+    if (data && data.data && data.data.length > 0) {
+      const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const target = norm(title);
+      const artistNorm = norm(artist);
+      // Pass 1: match both title AND artist
+      for (const track of data.data) {
+        if (!track.preview) continue;
+        const tt = norm(track.title);
+        const ta = norm(track.artist?.name || '');
+        if ((tt.includes(target) || target.includes(tt)) &&
+            (ta.includes(artistNorm) || artistNorm.includes(ta))) {
+          return track.preview;
+        }
+      }
+      // Pass 2: match title only
+      for (const track of data.data) {
+        if (!track.preview) continue;
+        const tt = norm(track.title);
+        if (tt.includes(target) || target.includes(tt)) {
+          return track.preview;
+        }
+      }
+      // Pass 3: first result with a preview
+      const withPreview = data.data.find(t => t.preview);
+      if (withPreview) return withPreview.preview;
+    }
+    return null;
+  } catch (e) {
+    console.error('Deezer fetch failed:', e);
+    return null;
+  }
+}
+
+// ═══════════════════════════════
+// SEEDED RANDOM
+// ═══════════════════════════════
+function seededRandom(seed) {
+  let s = seed;
+  return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+}
+function getDailySeed() {
+  const d = new Date();
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+}
+function pickSong(genre, seed) {
+  const rng = seededRandom(seed + genre.charCodeAt(0) * 137);
+  const pool = SONG_DB[genre];
+  return { ...pool[Math.floor(rng() * pool.length)] };
+}
+
+// ═══════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goHome() {
+  stopAudio();
+  showScreen('home-screen');
+  updateHomeScreen();
+}
+
+function updateHomeScreen() {
+  updateStats();
+  // Show daily-done banner if today's daily is already complete
+  const banner = document.getElementById('daily-done-banner');
+  if (isDailyComplete()) {
+    banner.style.display = 'block';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function updateStats() {
+  const row = document.getElementById('stats-row');
+  if (stats.p > 0) {
+    row.style.display = 'flex';
+    document.getElementById('stat-played').textContent = stats.p;
+    document.getElementById('stat-won').textContent = stats.w;
+    document.getElementById('stat-streak').textContent = stats.s;
+  }
+}
+
+// ═══════════════════════════════
+// AUDIO HELPERS
+// ═══════════════════════════════
+function stopAudio() {
+  audio.pause();
+  audio.currentTime = 0;
+  clearInterval(playTimer);
+  if (stopTimeout) { clearTimeout(stopTimeout); stopTimeout = null; }
+  isPlaying = false;
+}
+
+// ═══════════════════════════════
+// START SESSION
+// ═══════════════════════════════
+async function startSession(m) {
+  mode = m;
+
+  // If daily and already completed today, restore the results and show them
+  if (m === 'daily') {
+    const saved = loadDailyState();
+    if (saved && GENRE_ORDER.every(g => saved.results[g])) {
+      const seed = getDailySeed();
+      songs = {};
+      previewCache = {};
+      GENRE_ORDER.forEach(g => { songs[g] = pickSong(g, seed + g.charCodeAt(0) * 100); });
+      results = saved.results;
+      activeGenre = "all";
+      showScreen('game-screen');
+      renderHeader();
+      renderTabs();
+      renderCompletedGenre("all");
+      return;
+    }
+    // Restore partial daily progress
+    if (saved) {
+      results = saved.results;
+    }
+  }
+
+  const seed = m === 'daily' ? getDailySeed() : Math.floor(Math.random() * 999999);
+
+  songs = {};
+  previewCache = {};
+  GENRE_ORDER.forEach(g => { songs[g] = pickSong(g, seed + g.charCodeAt(0) * 100); });
+
+  if (m !== 'daily' || !results || Object.keys(results).length === 0) {
+    results = {};
+  }
+  activeGenre = GENRE_ORDER.find(g => !results[g]) || "all";
+  resetRound();
+  showScreen('game-screen');
+  renderHeader();
+  renderTabs();
+  await loadCurrentSong();
+}
+
+function renderHeader() {
+  const right = document.getElementById('header-right');
+  if (mode === 'unlimited') {
+    right.innerHTML = `<button class="shuffle-btn" onclick="startSession('unlimited')">&#128256; Shuffle</button>`;
+  } else {
+    right.innerHTML = `<div class="avatar">&#128100;</div>`;
+  }
+}
+
+// ═══════════════════════════════
+// GENRE TABS
+// ═══════════════════════════════
+function renderTabs() {
+  const wrap = document.getElementById('genre-tabs');
+  wrap.innerHTML = '';
+  GENRE_ORDER.forEach(g => {
+    const btn = document.createElement('button');
+    btn.textContent = GENRE_LABELS[g];
+    btn.className = '';
+    if (g === activeGenre) btn.classList.add('active');
+    if (results[g]) {
+      btn.textContent += results[g] === 'won' ? ' \u2713' : ' \u2717';
+      btn.classList.add('done');
+      btn.onclick = () => { switchGenre(g); };
+    } else if (g === activeGenre) {
+      // Current — no click handler
+    } else {
+      btn.classList.add('locked');
+    }
+    if (g === activeGenre) btn.onclick = null;
+    wrap.appendChild(btn);
+  });
+}
+
+function switchGenre(g) {
+  stopAudio();
+  activeGenre = g;
+  if (results[g]) {
+    renderTabs();
+    renderCompletedGenre(g);
+  } else {
+    resetRound();
+    renderTabs();
+    loadCurrentSong();
+  }
+}
+
+function renderCompletedGenre(g) {
+  const song = songs[g];
+  document.getElementById('guess-rows').innerHTML = '';
+  document.getElementById('result-panel').innerHTML = `
+    <div class="result">
+      <div class="label">${results[g] === 'won' ? '\uD83C\uDF89 You got it!' : 'The answer was:'}</div>
+      <div class="song-title">${song.title}</div>
+      <div class="song-artist">${song.artist}</div>
+    </div>
+  `;
+  document.getElementById('playback-area').style.display = 'none';
+  document.getElementById('controls-area').style.display = 'none';
+  document.getElementById('loading-area').style.display = 'none';
+}
+
+// ═══════════════════════════════
+// ROUND MANAGEMENT
+// ═══════════════════════════════
+function resetRound() {
+  step = 0;
+  hist = [];
+  gameState = "playing";
+  stopAudio();
+  currentPreviewUrl = null;
+
+  document.getElementById('guess-input').value = '';
+  document.getElementById('suggestions').classList.remove('open');
+  document.getElementById('suggestions').innerHTML = '';
+  document.getElementById('result-panel').innerHTML = '';
+  document.getElementById('playback-area').style.display = 'block';
+  document.getElementById('controls-area').style.display = 'flex';
+  document.getElementById('loading-area').style.display = 'none';
+  document.getElementById('play-btn').textContent = '\u25B6';
+  sugHighlight = -1;
+
+  renderRows();
+  renderProgress();
+  renderDuration();
+}
+
+async function loadCurrentSong() {
+  const song = songs[activeGenre];
+  if (!song) return;
+
+  // Check cache
+  if (previewCache[activeGenre]) {
+    currentPreviewUrl = previewCache[activeGenre];
+    audio.src = currentPreviewUrl;
+    audio.load();
+    return;
+  }
+
+  // Show loading
+  document.getElementById('loading-area').style.display = 'block';
+  document.getElementById('playback-area').style.display = 'none';
+
+  let url = await fetchPreview(song.title, song.artist);
+
+  // Retry with title-only if first attempt fails
+  if (!url) {
+    url = await fetchPreview(song.title, '');
+  }
+
+  document.getElementById('loading-area').style.display = 'none';
+  document.getElementById('playback-area').style.display = 'block';
+
+  if (url) {
+    currentPreviewUrl = url;
+    previewCache[activeGenre] = url;
+    audio.src = url;
+    audio.load();
+  } else {
+    currentPreviewUrl = null;
+    // Show error UI
+    document.getElementById('playback-area').innerHTML = `
+      <div class="error-msg">
+        Could not load preview for this song.
+        <br><button onclick="retryLoadSong()">Retry</button>
+      </div>
+    `;
+  }
+}
+
+function retryLoadSong() {
+  // Restore playback area HTML
+  document.getElementById('playback-area').innerHTML = `
+    <div class="dur-label" id="dur-label">0.1 seconds <span>\u25BC</span></div>
+    <div class="progress-bar" id="progress-bar">
+      <div class="fill" id="progress-fill"></div>
+    </div>
+    <div class="play-wrap">
+      <button class="play-btn" id="play-btn" onclick="togglePlay()">\u25B6</button>
+    </div>
+  `;
+  renderProgress();
+  renderDuration();
+  loadCurrentSong();
+}
+
+// ═══════════════════════════════
+// RENDER FUNCTIONS
+// ═══════════════════════════════
+function renderRows() {
+  const wrap = document.getElementById('guess-rows');
+  wrap.innerHTML = '';
+  for (let i = 0; i < MAX_STEPS; i++) {
+    const div = document.createElement('div');
+    div.className = 'row';
+    const entry = hist[i];
+    if (entry) {
+      div.classList.add(entry.type);
+      if (entry.type === 'correct') div.innerHTML = `<span class="icon" style="color:var(--ac)">\u2713</span>${entry.text}`;
+      else if (entry.type === 'wrong') div.innerHTML = `<span class="icon" style="color:var(--wr)">\u2717</span>${entry.text}`;
+      else div.textContent = 'Skipped';
+    } else if (i === hist.length && gameState === 'playing') {
+      div.classList.add('current');
+    }
+    wrap.appendChild(div);
+  }
+}
+
+function renderProgress() {
+  const fill = document.getElementById('progress-fill');
+  if (!fill) return;
+  let pct;
+  if (gameState !== 'playing') {
+    pct = 100;
+  } else if (step === 0) {
+    pct = 0;
+  } else {
+    pct = CUM_FILL[step - 1] * 100;
+  }
+  fill.classList.remove('animating');
+  fill.style.width = pct + '%';
+
+  // Render step markers
+  const bar = document.getElementById('progress-bar');
+  if (!bar) return;
+  bar.querySelectorAll('.marker').forEach(m => m.remove());
+  for (let i = 0; i < DURATIONS.length - 1; i++) {
+    const marker = document.createElement('div');
+    marker.className = 'marker';
+    marker.style.left = (CUM_FILL[i] * 100) + '%';
+    bar.appendChild(marker);
+  }
+}
+
+function animateProgress(duration) {
+  const fill = document.getElementById('progress-fill');
+  if (!fill) return;
+  const startPct = step === 0 ? 0 : CUM_FILL[step - 1] * 100;
+  const endPct = CUM_FILL[step] * 100;
+
+  fill.classList.add('animating');
+  const startTime = Date.now();
+  const ms = duration * 1000;
+
+  clearInterval(playTimer);
+  playTimer = setInterval(() => {
+    const elapsed = Date.now() - startTime;
+    const progress = Math.min(elapsed / ms, 1);
+    const currentPct = startPct + (endPct - startPct) * progress;
+    fill.style.width = currentPct + '%';
+    if (progress >= 1) {
+      clearInterval(playTimer);
+    }
+  }, 20);
+}
+
+function renderDuration() {
+  const el = document.getElementById('dur-label');
+  if (!el) return;
+  const d = DURATIONS[Math.min(step, MAX_STEPS - 1)];
+  const label = d < 1 ? `${d} seconds` : `${d} second${d !== 1 ? 's' : ''}`;
+  el.innerHTML = `${label} <span>\u25BC</span>`;
+}
+
+function renderResult() {
+  const song = songs[activeGenre];
+  const next = getNextGenre();
+  const allDone = GENRE_ORDER.every(g => results[g]);
+
+  let actionsHtml = '';
+  if (next) {
+    actionsHtml += `<button class="btn-primary" onclick="advanceToGenre('${next}')">Next \u2192 ${GENRE_LABELS[next]}</button>`;
+  }
+  if (allDone && mode === 'unlimited') {
+    actionsHtml += `<button class="btn-primary" onclick="startSession('unlimited')">&#128256; New Game</button>`;
+  }
+  if (allDone && mode === 'daily') {
+    actionsHtml += `<div class="done-msg">All daily challenges complete! Come back tomorrow.</div>`;
+  }
+  actionsHtml += `<button class="btn-secondary" onclick="goHome()">Home</button>`;
+
+  document.getElementById('result-panel').innerHTML = `
+    <div class="result">
+      <div class="label">${gameState === 'won' ? '\uD83C\uDF89 Correct!' : 'The answer was:'}</div>
+      <div class="song-title">${song.title}</div>
+      <div class="song-artist">${song.artist}</div>
+      <div class="actions">${actionsHtml}</div>
+    </div>
+  `;
+
+  document.getElementById('controls-area').style.display = 'none';
+
+  // Save state
+  saveStats();
+  saveDailyState();
+}
+
+function getNextGenre() {
+  const idx = GENRE_ORDER.indexOf(activeGenre);
+  for (let i = idx + 1; i < GENRE_ORDER.length; i++) {
+    if (!results[GENRE_ORDER[i]]) return GENRE_ORDER[i];
+  }
+  return null;
+}
+
+function advanceToGenre(g) {
+  stopAudio();
+  activeGenre = g;
+  resetRound();
+  renderTabs();
+  loadCurrentSong();
+}
+
+// ═══════════════════════════════
+// PLAY / PAUSE
+// ═══════════════════════════════
+function togglePlay() {
+  if (!currentPreviewUrl) return;
+  if (isPlaying) {
+    audio.pause();
+    isPlaying = false;
+    clearInterval(playTimer);
+    if (stopTimeout) { clearTimeout(stopTimeout); stopTimeout = null; }
+    document.getElementById('play-btn').textContent = '\u25B6';
+    return;
+  }
+
+  const dur = DURATIONS[Math.min(step, MAX_STEPS - 1)];
+  audio.currentTime = 0;
+  audio.play().then(() => {
+    isPlaying = true;
+    document.getElementById('play-btn').textContent = '\u23F8';
+    animateProgress(dur);
+
+    // Clear any existing stop timeout
+    if (stopTimeout) clearTimeout(stopTimeout);
+    stopTimeout = setTimeout(() => {
+      if (isPlaying) {
+        audio.pause();
+        isPlaying = false;
+        document.getElementById('play-btn').textContent = '\u25B6';
+        clearInterval(playTimer);
+        // Snap progress bar to step end
+        const endPct = CUM_FILL[step] * 100;
+        const fill = document.getElementById('progress-fill');
+        if (fill) {
+          fill.classList.remove('animating');
+          fill.style.width = endPct + '%';
+        }
+      }
+      stopTimeout = null;
+    }, dur * 1000);
+  }).catch(e => {
+    console.error('Play failed:', e);
+    isPlaying = false;
+  });
+}
+
+// ═══════════════════════════════
+// SKIP
+// ═══════════════════════════════
+function doSkip() {
+  if (gameState !== 'playing') return;
+  stopAudio();
+  document.getElementById('play-btn').textContent = '\u25B6';
+
+  hist.push({ type: 'skip', step });
+
+  if (step >= MAX_STEPS - 1) {
+    gameState = 'lost';
+    results[activeGenre] = 'lost';
+    stats.p++; stats.s = 0;
+    renderRows();
+    renderProgress();
+    renderTabs();
+    renderResult();
+    if (currentPreviewUrl) {
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+    }
+  } else {
+    step++;
+    renderRows();
+    renderProgress();
+    renderDuration();
+  }
+}
+
+// ═══════════════════════════════
+// GUESS
+// ═══════════════════════════════
+function submitGuess(text) {
+  if (!text.trim() || !songs[activeGenre] || gameState !== 'playing') return;
+  stopAudio();
+
+  const norm = s => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+  const correct = norm(text) === norm(songs[activeGenre].title);
+
+  if (correct) {
+    hist.push({ type: 'correct', text, step });
+    gameState = 'won';
+    results[activeGenre] = 'won';
+    stats.p++; stats.w++; stats.s++;
+    renderRows();
+    renderProgress();
+    renderTabs();
+    renderResult();
+    if (currentPreviewUrl) { audio.currentTime = 0; audio.play().catch(() => {}); }
+  } else {
+    hist.push({ type: 'wrong', text, step });
+    if (step >= MAX_STEPS - 1) {
+      gameState = 'lost';
+      results[activeGenre] = 'lost';
+      stats.p++; stats.s = 0;
+      renderRows();
+      renderProgress();
+      renderTabs();
+      renderResult();
+      if (currentPreviewUrl) { audio.currentTime = 0; audio.play().catch(() => {}); }
+    } else {
+      step++;
+      renderRows();
+      renderProgress();
+      renderDuration();
+    }
+  }
+  document.getElementById('guess-input').value = '';
+  closeSuggestions();
+}
+
+// ═══════════════════════════════
+// SEARCH / AUTOCOMPLETE
+// ═══════════════════════════════
+const guessInput = document.getElementById('guess-input');
+const sugBox = document.getElementById('suggestions');
+const inputBar = document.getElementById('input-bar');
+
+function closeSuggestions() {
+  sugBox.classList.remove('open');
+  sugBox.innerHTML = '';
+  inputBar.classList.remove('has-sug');
+  sugHighlight = -1;
+}
+
+function updateSuggestionHighlight() {
+  const btns = sugBox.querySelectorAll('button');
+  btns.forEach((b, i) => {
+    b.classList.toggle('highlighted', i === sugHighlight);
+  });
+}
+
+guessInput.addEventListener('input', () => {
+  const q = guessInput.value.toLowerCase().trim();
+  sugHighlight = -1;
+  if (!q) { closeSuggestions(); return; }
+
+  // Always search across ALL songs so user can find any song
+  const pool = ALL_SONGS_FLAT;
+  const seen = new Set();
+  const matches = [];
+  for (const s of pool) {
+    const key = s.title.toLowerCase() + '|' + s.artist.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if (s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q)) {
+      matches.push(s);
+      if (matches.length >= 10) break;
+    }
+  }
+
+  if (matches.length === 0) { closeSuggestions(); return; }
+
+  sugBox.innerHTML = '';
+  matches.forEach(m => {
+    const btn = document.createElement('button');
+    btn.innerHTML = `<span>${m.title}</span> <span class="dash">\u2013</span> <span class="artist">${m.artist}</span>`;
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      guessInput.value = m.title;
+      closeSuggestions();
+      setTimeout(() => submitGuess(m.title), 30);
+    });
+    sugBox.appendChild(btn);
+  });
+  sugBox.classList.add('open');
+  inputBar.classList.add('has-sug');
+});
+
+guessInput.addEventListener('keydown', (e) => {
+  const btns = sugBox.querySelectorAll('button');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (btns.length > 0) {
+      sugHighlight = Math.min(sugHighlight + 1, btns.length - 1);
+      updateSuggestionHighlight();
+      btns[sugHighlight].scrollIntoView({ block: 'nearest' });
+    }
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (btns.length > 0) {
+      sugHighlight = Math.max(sugHighlight - 1, 0);
+      updateSuggestionHighlight();
+      btns[sugHighlight].scrollIntoView({ block: 'nearest' });
+    }
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (sugHighlight >= 0 && sugHighlight < btns.length) {
+      btns[sugHighlight].dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    } else if (guessInput.value.trim()) {
+      submitGuess(guessInput.value);
+    }
+  } else if (e.key === 'Escape') {
+    closeSuggestions();
+  }
+});
+
+guessInput.addEventListener('focus', () => {
+  if (guessInput.value.trim()) guessInput.dispatchEvent(new Event('input'));
+});
+
+document.addEventListener('click', (e) => {
+  if (!sugBox.contains(e.target) && e.target !== guessInput) {
+    closeSuggestions();
+  }
+});
+
+// Stop audio when tab hidden
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && isPlaying) {
+    audio.pause(); isPlaying = false; clearInterval(playTimer);
+    if (stopTimeout) { clearTimeout(stopTimeout); stopTimeout = null; }
+    const playBtn = document.getElementById('play-btn');
+    if (playBtn) playBtn.textContent = '\u25B6';
+  }
+});
+
+// ═══════════════════════════════
+// INIT ON LOAD
+// ═══════════════════════════════
+updateHomeScreen();
+</script>
+</body>
+</html>
