@@ -41,14 +41,16 @@ const Tab = styled.button<{ $active: boolean; $done: boolean; $locked: boolean }
 interface GenreTabsProps {
   activeGenre: Genre;
   results: Partial<Record<Genre, GameResult>>;
+  selectedGenres: Genre[];
   onSwitch: (genre: Genre) => void;
 }
 
-export default function GenreTabs({ activeGenre, results, onSwitch }: GenreTabsProps) {
+export default function GenreTabs({ activeGenre, results, selectedGenres, onSwitch }: GenreTabsProps) {
+  const genres = selectedGenres.length > 0 ? selectedGenres : GENRE_ORDER;
   return (
     <TabsWrap>
       <Tabs>
-        {GENRE_ORDER.map(g => {
+        {genres.map(g => {
           const isActive = g === activeGenre;
           const isDone = !!results[g];
           const isLocked = !isDone && !isActive;

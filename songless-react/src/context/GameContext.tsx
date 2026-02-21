@@ -8,8 +8,8 @@ import type { GameState, GameAction, GameMode, GameResult, Genre, Song } from '.
 interface GameContextValue {
   state: GameState;
   dispatch: Dispatch<GameAction>;
-  startSession: (mode: GameMode, savedResults?: Partial<Record<Genre, GameResult>>) => { songs: Record<Genre, Song>; activeGenre: Genre };
-  showCompletedDaily: (savedResults: Partial<Record<Genre, GameResult>>) => void;
+  startSession: (mode: GameMode, savedResults?: Partial<Record<Genre, GameResult>>, genres?: Genre[]) => { songs: Record<Genre, Song>; activeGenre: Genre };
+  showCompletedDaily: (savedResults: Partial<Record<Genre, GameResult>>, genres?: Genre[]) => void;
 }
 
 const GameContext = createContext<GameContextValue | null>(null);
@@ -18,6 +18,7 @@ const initialState: GameState = {
   screen: 'home',
   mode: null,
   activeGenre: 'all',
+  selectedGenres: [],
   songs: {},
   step: 0,
   hist: [],
@@ -34,26 +35,28 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, screen: 'home' };
 
     case 'START_SESSION': {
-      const { mode, songs, results, activeGenre } = action.payload;
+      const { mode, songs, results, activeGenre, selectedGenres } = action.payload;
       return {
         ...initialState,
         screen: 'game',
         mode,
         songs,
+        selectedGenres,
         results: results || {},
-        activeGenre: activeGenre || 'all',
+        activeGenre: activeGenre || selectedGenres[0] || 'all',
       };
     }
 
     case 'SHOW_COMPLETED_DAILY': {
-      const { songs, results } = action.payload;
+      const { songs, results, selectedGenres } = action.payload;
       return {
         ...initialState,
         screen: 'game',
         mode: 'daily',
         songs,
+        selectedGenres,
         results,
-        activeGenre: 'all',
+        activeGenre: selectedGenres[0] || 'all',
         gameState: 'lost', // doesn't matter, just not 'playing'
       };
     }
@@ -142,31 +145,33 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 export function GameProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
 
-  const startSession = useCallback((mode: GameMode, savedResults?: Partial<Record<Genre, GameResult>>) => {
+  const startSession = useCallback((mode: GameMode, savedResults?: Partial<Record<Genre, GameResult>>, genres?: Genre[]) => {
+    const selectedGenres = genres && genres.length > 0 ? genres : GENRE_ORDER;
     const seed = mode === 'daily' ? getDailySeed() : Math.floor(Math.random() * 999999);
     const songs = {} as Record<Genre, Song>;
-    GENRE_ORDER.forEach(g => {
+    selectedGenres.forEach(g => {
       songs[g] = pickSong(g, seed + g.charCodeAt(0) * 100);
     });
 
     const results = savedResults || {};
-    const activeGenre = GENRE_ORDER.find(g => !results[g]) || 'all';
+    const activeGenre = selectedGenres.find(g => !results[g]) || selectedGenres[0];
 
     dispatch({
       type: 'START_SESSION',
-      payload: { mode, songs, results, activeGenre },
+      payload: { mode, songs, results, activeGenre, selectedGenres },
     });
 
     return { songs, activeGenre };
   }, []);
 
-  const showCompletedDaily = useCallback((savedResults: Partial<Record<Genre, GameResult>>) => {
+  const showCompletedDaily = useCallback((savedResults: Partial<Record<Genre, GameResult>>, genres?: Genre[]) => {
+    const selectedGenres = genres && genres.length > 0 ? genres : GENRE_ORDER;
     const seed = getDailySeed();
     const songs = {} as Record<Genre, Song>;
-    GENRE_ORDER.forEach(g => {
+    selectedGenres.forEach(g => {
       songs[g] = pickSong(g, seed + g.charCodeAt(0) * 100);
     });
-    dispatch({ type: 'SHOW_COMPLETED_DAILY', payload: { songs, results: savedResults } });
+    dispatch({ type: 'SHOW_COMPLETED_DAILY', payload: { songs, results: savedResults, selectedGenres } });
   }, []);
 
   return (

@@ -36,6 +36,7 @@ export interface GameState {
   screen: 'home' | 'game';
   mode: GameMode | null;
   activeGenre: Genre;
+  selectedGenres: Genre[];
   songs: Partial<Record<Genre, Song>>;
   step: number;
   hist: HistEntry[];
@@ -59,8 +60,8 @@ export interface DailyState {
 
 export type GameAction =
   | { type: 'GO_HOME' }
-  | { type: 'START_SESSION'; payload: { mode: GameMode; songs: Record<Genre, Song>; results: Partial<Record<Genre, GameResult>>; activeGenre: Genre } }
-  | { type: 'SHOW_COMPLETED_DAILY'; payload: { songs: Record<Genre, Song>; results: Partial<Record<Genre, GameResult>> } }
+  | { type: 'START_SESSION'; payload: { mode: GameMode; songs: Record<Genre, Song>; results: Partial<Record<Genre, GameResult>>; activeGenre: Genre; selectedGenres: Genre[] } }
+  | { type: 'SHOW_COMPLETED_DAILY'; payload: { songs: Record<Genre, Song>; results: Partial<Record<Genre, GameResult>>; selectedGenres: Genre[] } }
   | { type: 'RESET_ROUND' }
   | { type: 'SET_PREVIEW'; payload: string }
   | { type: 'SET_PREVIEW_LOADING'; payload: boolean }

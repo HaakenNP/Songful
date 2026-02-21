@@ -68,7 +68,7 @@ const SkipBtn = styled.button`
 
 export default function GameScreen() {
   const { state, dispatch, startSession } = useGame();
-  const { mode, activeGenre, songs, step, hist, gameState, results, currentPreviewUrl, previewLoading, previewError } = state;
+  const { mode, activeGenre, selectedGenres, songs, step, hist, gameState, results, currentPreviewUrl, previewLoading, previewError } = state;
   const audio = useAudio();
   const { fetchPreview } = useDeezer();
   const suggestions = useSuggestions();
@@ -173,8 +173,8 @@ export default function GameScreen() {
   const handleShuffle = useCallback(() => {
     audio.stop();
     previewCacheRef.current = {};
-    startSession('unlimited');
-  }, [audio, startSession]);
+    startSession('unlimited', undefined, selectedGenres);
+  }, [audio, startSession, selectedGenres]);
 
   const handleAdvance = useCallback((genre: Genre) => {
     audio.stop();
@@ -200,8 +200,8 @@ export default function GameScreen() {
   const handleNewGame = useCallback(() => {
     audio.stop();
     previewCacheRef.current = {};
-    startSession('unlimited');
-  }, [audio, startSession]);
+    startSession('unlimited', undefined, selectedGenres);
+  }, [audio, startSession, selectedGenres]);
 
   // Check if viewing a completed genre (not the one being actively played)
   const viewingCompleted = results[activeGenre] && (isCompletedView || (isGameOver && hist.length > 0));
@@ -209,7 +209,7 @@ export default function GameScreen() {
   return (
     <Screen>
       <GameHeader mode={mode} onHome={handleHome} onShuffle={handleShuffle} />
-      <GenreTabs activeGenre={activeGenre} results={results} onSwitch={handleSwitchGenre} />
+      <GenreTabs activeGenre={activeGenre} results={results} selectedGenres={selectedGenres} onSwitch={handleSwitchGenre} />
 
       <Body>
         {/* Viewing a previously completed genre */}
@@ -220,6 +220,7 @@ export default function GameScreen() {
             results={results}
             mode={mode}
             activeGenre={activeGenre}
+            selectedGenres={selectedGenres}
             onAdvance={handleAdvance}
             onNewGame={handleNewGame}
             onHome={handleHome}
@@ -238,6 +239,7 @@ export default function GameScreen() {
                 results={results}
                 mode={mode}
                 activeGenre={activeGenre}
+                selectedGenres={selectedGenres}
                 onAdvance={handleAdvance}
                 onNewGame={handleNewGame}
                 onHome={handleHome}

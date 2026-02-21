@@ -67,19 +67,21 @@ interface ResultPanelProps {
   results: Partial<Record<Genre, GameResult>>;
   mode: GameMode | null;
   activeGenre: Genre;
+  selectedGenres: Genre[];
   onAdvance: (genre: Genre) => void;
   onNewGame: () => void;
   onHome: () => void;
 }
 
-export default function ResultPanel({ song, gameState, results, mode, activeGenre, onAdvance, onNewGame, onHome }: ResultPanelProps) {
-  const allDone = GENRE_ORDER.every(g => results[g]);
+export default function ResultPanel({ song, gameState, results, mode, activeGenre, selectedGenres, onAdvance, onNewGame, onHome }: ResultPanelProps) {
+  const genres = selectedGenres.length > 0 ? selectedGenres : GENRE_ORDER;
+  const allDone = genres.every(g => results[g]);
 
   // Find next uncompleted genre
-  const idx = GENRE_ORDER.indexOf(activeGenre);
+  const idx = genres.indexOf(activeGenre);
   let nextGenre: Genre | null = null;
-  for (let i = idx + 1; i < GENRE_ORDER.length; i++) {
-    if (!results[GENRE_ORDER[i]]) { nextGenre = GENRE_ORDER[i]; break; }
+  for (let i = idx + 1; i < genres.length; i++) {
+    if (!results[genres[i]]) { nextGenre = genres[i]; break; }
   }
 
   return (
