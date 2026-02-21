@@ -64,7 +64,7 @@ export default function GameHeader({ mode, onHome, onShuffle }: GameHeaderProps)
   return (
     <Header>
       <MenuBtn onClick={onHome}>&#9776;</MenuBtn>
-      <Title>Songless</Title>
+      <Title>Songful</Title>
       {mode === 'unlimited' ? (
         <ShuffleBtn onClick={onShuffle}>&#128256; Shuffle</ShuffleBtn>
       ) : (

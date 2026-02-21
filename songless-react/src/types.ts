@@ -5,11 +5,20 @@ export interface Song {
 
 export interface SongDB {
   all: Song[];
+  pop: Song[];
   rock: Song[];
   hiphop: Song[];
+  rnb: Song[];
+  country: Song[];
+  edm: Song[];
+  latin: Song[];
+  indie: Song[];
+  jazz: Song[];
+  kpop: Song[];
+  alt: Song[];
 }
 
-export type Genre = 'all' | 'rock' | 'hiphop';
+export type Genre = 'all' | 'pop' | 'rock' | 'hiphop' | 'rnb' | 'country' | 'edm' | 'latin' | 'indie' | 'jazz' | 'kpop' | 'alt';
 
 export type GameResult = 'won' | 'lost';
 
