@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
-import { DURATIONS, MAX_STEPS, CUM_FILL } from '../constants';
+import { CUM_DURATIONS, MAX_STEPS, CUM_FILL } from '../constants';
 import type { GameStateValue } from '../types';
 
 export function useAudio() {
@@ -44,9 +44,12 @@ export function useAudio() {
   }, []);
 
   const play = useCallback((step: number) => {
-    const dur = DURATIONS[Math.min(step, MAX_STEPS - 1)];
-    const startPct = step === 0 ? 0 : CUM_FILL[step - 1] * 100;
+    // Always play from 0 for the full cumulative duration of this step
+    const cumDur = CUM_DURATIONS[Math.min(step, MAX_STEPS - 1)];
     const endPct = CUM_FILL[step] * 100;
+
+    // Bar always starts from 0 — like an hourglass resetting each press
+    setFillWidth(0);
 
     audioRef.current.currentTime = 0;
     audioRef.current.play().then(() => {
@@ -54,14 +57,15 @@ export function useAudio() {
       setAnimating(true);
 
       const startTime = Date.now();
-      const ms = dur * 1000;
+      const ms = cumDur * 1000;
 
       clearTimers();
 
       playTimerRef.current = setInterval(() => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / ms, 1);
-        setFillWidth(startPct + (endPct - startPct) * progress);
+        // Fill from 0 → endPct over the full cumulative duration
+        setFillWidth(endPct * progress);
         if (progress >= 1) {
           clearInterval(playTimerRef.current!);
           playTimerRef.current = null;
